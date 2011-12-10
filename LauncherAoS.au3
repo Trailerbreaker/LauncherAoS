@@ -1,6 +1,6 @@
 #region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=Icone.ico
-#AutoIt3Wrapper_Res_Fileversion=alpha1.0
+#AutoIt3Wrapper_Res_Fileversion=0.0.1
 #AutoIt3Wrapper_Run_Tidy=y
 #endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <ButtonConstants.au3>
@@ -13,7 +13,7 @@
 #include <GDIPlus.au3>
 #include <WinAPI.au3>
 
-Opt("TrayMenuMode", 0)
+Opt("TrayIconHide", 1)
 
 DirCreate(@TempDir & '\LauncherAoS')
 FileInstall('images/background.png', @TempDir & '\LauncherAoS\fond.png', 1)
