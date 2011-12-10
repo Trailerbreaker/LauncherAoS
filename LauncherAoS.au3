@@ -9,7 +9,7 @@
 #include <WinAPI.au3>
 
 DirCreate(@TempDir & '\LauncherAoS')
-FileInstall('images/fond.png', @TempDir & '\LauncherAoS\fond.png', 1)
+FileInstall('images/background.png', @TempDir & '\LauncherAoS\fond.png', 1)
 $pngFile = @TempDir & '\LauncherAoS\fond.png'
 InetGet("http://aurel2108.tonbnc.fr/launcheraos/serverlist.php", @TempDir & '\LauncherAoS\serverlist.txt', 1)
 
