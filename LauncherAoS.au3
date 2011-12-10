@@ -66,7 +66,7 @@ While 1
 			If GUICtrlRead($listview) == 0 Then
 				MsgBox(0, "Error", "You have not selected any server.")
 			Else
-				$server = _StringExplode($servers[GUICtrlRead($listview)], '-|-')
+				$server = _StringExplode($servers[GUICtrlRead($listview) - 7], '-|-')
 				Play($server[4])
 			EndIf
 		Case $RefreshButton
@@ -101,6 +101,10 @@ Func Options()
 EndFunc   ;==>Options
 
 Func Play($server)
+	If FileExists(@HomeDrive & '\Ace of Spades\client.exe') Then
+		ShellExecute(@HomeDrive & '\Ace of Spades\client.exe', $server)
+	Else
+	EndIf
 	ConsoleWrite('Play : ' & $server & @CRLF)
 EndFunc   ;==>Play
 
