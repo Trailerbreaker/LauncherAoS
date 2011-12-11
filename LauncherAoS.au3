@@ -40,7 +40,7 @@ Local $OptionsButton[4] = [581, 417, 581 + 119, 417 + 35]
 Local $PlayButton[4] = [709, 417, 709 + 119, 417 + 35]
 Local $RefreshButton[4] = [662, 57, 662 + 119, 57 + 35]
 
-$listview = GUICtrlCreateListView("Status|Players|Ping|Country|Name                        ", 24, 8, 593, 370)
+$listview = GUICtrlCreateListView("Status|Players|Ping|Country|Name                        ", 24, 8, 593, 330)
 GUISetState(@SW_SHOW)
 #endregion ### END Koda GUI section ###
 
