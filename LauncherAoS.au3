@@ -18,6 +18,7 @@ Opt("TrayIconHide", 1)
 DirCreate(@TempDir & '\LauncherAoS')
 FileInstall('images/background.png', @TempDir & '\LauncherAoS\fond.png', 1)
 $pngFile = @TempDir & '\LauncherAoS\fond.png'
+
 InetGet("http://aurel2108.tonbnc.fr/launcheraos/serverlist.php", @TempDir & '\LauncherAoS\serverlist.txt', 1)
 
 $serverlist = FileOpen(@TempDir & '\LauncherAoS\serverlist.txt')
@@ -34,9 +35,11 @@ GUIRegisterMsg(0x85, "MY_PAINT") ; $WM_NCPAINT = 0x0085 (WindowsConstants.au3)Re
 _GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
 GUISetIcon('Icone.ico')
 GUISetState()
-$OptionsButton = GUICtrlCreateButton("Options", 568, 424, 75, 25)
-$PlayButton = GUICtrlCreateButton("Play", 696, 424, 75, 25)
-$RefreshButton = GUICtrlCreateButton("Refresh", 685, 40, 100, 25)
+
+Local $OptionsButton[4] = [581, 417, 581 + 119, 417 + 35]
+Local $PlayButton[4] = [709, 417, 709 + 119, 417 + 35]
+Local $RefreshButton[4] = [662, 57, 662 + 119, 57 + 35]
+
 $listview = GUICtrlCreateListView("Status|Players|Ping|Country|Name                        ", 24, 8, 593, 370)
 GUISetState(@SW_SHOW)
 #endregion ### END Koda GUI section ###
@@ -60,19 +63,22 @@ While 1
 	Switch $nMsg
 		Case $GUI_EVENT_CLOSE
 			Exit
-		Case $OptionsButton
+	EndSwitch
+	$cursorInfo = GUIGetCursorInfo()
+	If IsArray($cursorInfo) And $cursorInfo[2] == 1 Then
+		If ImgButton($cursorInfo[0], $cursorInfo[1], $OptionsButton[0], $OptionsButton[1], $OptionsButton[2], $OptionsButton[3]) Then
 			Options()
-		Case $PlayButton
+		ElseIf ImgButton($cursorInfo[0], $cursorInfo[1], $PlayButton[0], $PlayButton[1], $PlayButton[2], $PlayButton[3]) Then
 			If GUICtrlRead($listview) == 0 Then
 				MsgBox(0, "Error", "You have not selected any server.")
 			Else
 				$server = _StringExplode($servers[GUICtrlRead($listview) - 7], '-|-')
 				Play($server[4])
 			EndIf
-		Case $RefreshButton
+		ElseIf ImgButton($cursorInfo[0], $cursorInfo[1], $RefreshButton[0], $RefreshButton[1], $RefreshButton[2], $RefreshButton[3]) Then
 			Refresh()
-	EndSwitch
-	;If $nMsg <> 0 And $nMsg <> -11 Then ConsoleWrite($nMsg & @CRLF)
+		EndIf
+	EndIf
 WEnd
 
 Func Refresh()
@@ -102,8 +108,16 @@ EndFunc   ;==>Options
 
 Func Play($server)
 	If FileExists(@HomeDrive & '\Ace of Spades\client.exe') Then
-		ShellExecute(@HomeDrive & '\Ace of Spades\client.exe', $server)
+		;ShellExecute(@HomeDrive & '\Ace of Spades\client.exe', '//' . $server)
+		Run(@HomeDrive & '\Ace of Spades\client.exe ' & $server)
 	Else
+		$emplacement = FileSelectFolder("Choose your Ace of Spades folder", "")
+		If @error Then
+		Else
+			If FileExists($emplacement & '\client.exe') Then
+				Run($emplacement & '\client.exe ' & $server)
+			EndIf
+		EndIf
 	EndIf
 	ConsoleWrite('Play : ' & $server & @CRLF)
 EndFunc   ;==>Play
@@ -119,3 +133,11 @@ Func MY_PAINT($hWnd, $msg, $wParam, $lParam)
 	_WinAPI_RedrawWindow($LauncherWin, "", "", BitOR($RDW_INVALIDATE, $RDW_FRAME, $RDW_ALLCHILDREN)) ;
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>MY_PAINT
+
+Func ImgButton($sourisX, $sourisY, $boutonX1, $boutonY1, $boutonX2, $boutonY2)
+	If $sourisX >= $boutonX1 And $sourisX <= $boutonX2 And $sourisY >= $boutonY1 And $sourisY <= $boutonY2 Then
+		Return True
+	Else
+		Return False
+	EndIf
+EndFunc   ;==>ImgButton
