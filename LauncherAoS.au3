@@ -4,6 +4,8 @@
 #AutoIt3Wrapper_Run_Tidy=y
 #endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <ButtonConstants.au3>
+#include <ComboConstants.au3>
+#include <SliderConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <GUIListBox.au3>
 #include <StaticConstants.au3>
@@ -36,11 +38,14 @@ _GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
 GUISetIcon('Icone.ico')
 GUISetState()
 
-Local $OptionsButton[4] = [581, 417, 581 + 119, 417 + 35]
-Local $PlayButton[4] = [709, 417, 709 + 119, 417 + 35]
-Local $RefreshButton[4] = [662, 57, 662 + 119, 57 + 35]
+Local $OptionsButton[4] = [569, 417, 688, 452]
+Local $PlayButton[4] = [715, 417, 834, 452]
+Local $RefreshButton[4] = [682, 47, 801, 82]
+Local $ServerListButton[4] = [23, 348, 215, 379]
+Local $FavoritesButton[4] = [228, 348, 420, 379]
+Local $AddToFavoritesButton[4] = [432, 348, 625, 378]
 
-$listview = GUICtrlCreateListView("Status|Players|Ping|Country|Name                        ", 24, 8, 593, 330)
+$listview = GUICtrlCreateListView("Status|Players|Ping|Country|Name                               ", 24, 8, 593, 330)
 GUISetState(@SW_SHOW)
 #endregion ### END Koda GUI section ###
 
@@ -103,7 +108,82 @@ Func Refresh()
 EndFunc   ;==>Refresh
 
 Func Options()
+	If FileExists(@HomeDrive & '\Ace of Spades\config.ini') Then
+		$iniFile = @HomeDrive & '\Ace of Spades\config.ini'
+	Else
+		$emplacement = FileSelectFolder("Choose your Ace of Spades folder", "")
+		If @error Then
+		Else
+			If FileExists($emplacement & '\config.ini') Then
+				$iniFile = $emplacement & '\config.ini'
+			EndIf
+		EndIf
+	EndIf
 
+	$OptionsWin = GUICreate("Options", 251, 275, 475, 250)
+	$NameLabel = GUICtrlCreateLabel("Name :", 24, 16, 38, 17)
+	$NameInput = GUICtrlCreateInput(IniRead($iniFile, "client", "name", "Deuce"), 72, 13, 161, 21)
+	$ResolutionLabel = GUICtrlCreateLabel("Resolution :", 24, 48, 60, 17)
+	$VolumeLabel = GUICtrlCreateLabel("Volume :", 24, 80, 45, 17)
+	$VolumeSlider = GUICtrlCreateSlider(72, 72, 158, 29)
+	GUICtrlSetData(-1, IniRead($iniFile, "client", "vol", "10"))
+	GUICtrlSetLimit(-1, 10, 0)
+	$ResolutionCombo = GUICtrlCreateCombo("", 88, 45, 145, 25)
+	GUICtrlSetData($ResolutionCombo, "640x480|800x600|1024x768|1152x864|1280x600|1280x720|1280x768|1280x800|1280x854|1280x960|1280x1024|1360x768|1440x900|1600x900|1600x1200|1680x1050", IniRead($iniFile, "client", "xres", "800") & "x" & IniRead($iniFile, "client", "yres", "600"))
+	$InvertMouse = GUICtrlCreateCheckbox("Invert Mouse", 24, 112, 201, 17)
+	If IniRead($iniFile, "client", "inverty", "0") == "1" Then GUICtrlSetState(-1, $GUI_CHECKED)
+	$Windowed = GUICtrlCreateCheckbox("Windowed Mode", 24, 141, 201, 17)
+	If IniRead($iniFile, "client", "windowed", "0") == "1" Then GUICtrlSetState(-1, $GUI_CHECKED)
+	$LanguageLabel = GUICtrlCreateLabel("Language :", 24, 168, 58, 17)
+	$LanguageCombo = GUICtrlCreateCombo("", 88, 164, 145, 25)
+	Local $LangArray[6] = ['English', 'Deutsch', 'Français', 'Español', 'Português', 'Italiano']
+	GUICtrlSetData($LanguageCombo, "English|Deutsch|Français|Español|Português|Italiano", $LangArray[IniRead($iniFile, "client", "language", "0")])
+	$MouseSensitivityLabel = GUICtrlCreateLabel("Mouse Sensitivity :", 24, 200, 92, 17)
+	$MouseSensitivitySlider = GUICtrlCreateSlider(112, 194, 118, 29)
+	GUICtrlSetData(-1, IniRead($iniFile, "client", "mouse_sensitivity", "5"))
+	GUICtrlSetLimit(-1, 10, 0)
+	$OKButton = GUICtrlCreateButton("OK", 24, 232, 207, 38)
+	GUISetState(@SW_SHOW)
+
+	While 1
+		$nMsg = GUIGetMsg()
+		Switch $nMsg
+			Case $GUI_EVENT_CLOSE
+				ExitLoop
+			Case $OKButton
+				IniWrite($iniFile, "client", "name", GUICtrlRead($NameInput))
+				$resolution = _StringExplode(GUICtrlRead($ResolutionCombo), "x")
+				IniWrite($iniFile, "client", "xres", $resolution[0])
+				IniWrite($iniFile, "client", "yres", $resolution[1])
+				IniWrite($iniFile, "client", "vol", GUICtrlRead($VolumeSlider))
+				If GUICtrlRead($InvertMouse) == $GUI_CHECKED Then
+					IniWrite($iniFile, "client", "inverty", "1")
+				Else
+					IniWrite($iniFile, "client", "inverty", "0")
+				EndIf
+				If GUICtrlRead($Windowed) == $GUI_CHECKED Then
+					IniWrite($iniFile, "client", "windowed", "1")
+				Else
+					IniWrite($iniFile, "client", "windowed", "0")
+				EndIf
+				If GUICtrlRead($LanguageCombo) == "English" Then
+					IniWrite($iniFile, "client", "language", "0")
+				ElseIf GUICtrlRead($LanguageCombo) == "Deutsch" Then
+					IniWrite($iniFile, "client", "language", "1")
+				ElseIf GUICtrlRead($LanguageCombo) == "Français" Then
+					IniWrite($iniFile, "client", "language", "2")
+				ElseIf GUICtrlRead($LanguageCombo) == "Español" Then
+					IniWrite($iniFile, "client", "language", "3")
+				ElseIf GUICtrlRead($LanguageCombo) == "Português" Then
+					IniWrite($iniFile, "client", "language", "4")
+				Else
+					IniWrite($iniFile, "client", "language", "5")
+				EndIf
+				IniWrite($iniFile, "client", "mouse_sensitivity", GUICtrlRead($MouseSensitivitySlider))
+				ExitLoop
+		EndSwitch
+	WEnd
+	GUIDelete($OptionsWin)
 EndFunc   ;==>Options
 
 Func Play($server)
@@ -111,7 +191,7 @@ Func Play($server)
 		;ShellExecute(@HomeDrive & '\Ace of Spades\client.exe', '//' . $server)
 		Run(@HomeDrive & '\Ace of Spades\client.exe ' & $server)
 	Else
-		$emplacement = FileSelectFolder("Choose your Ace of Spades folder", "")
+		$emplacement = FileSelectFolder("Choo23 your Ace of Spades folder", "")
 		If @error Then
 		Else
 			If FileExists($emplacement & '\client.exe') Then
