@@ -14,6 +14,8 @@
 #include <String.au3>
 #include <GDIPlus.au3>
 #include <WinAPI.au3>
+#include <SQLite.au3>
+#include <SQLite.dll.au3>
 
 Opt("TrayIconHide", 1)
 
@@ -77,7 +79,7 @@ While 1
 			If GUICtrlRead($listview) == 0 Then
 				MsgBox(0, "Error", "You have not selected any server.")
 			Else
-				$server = _StringExplode($servers[GUICtrlRead($listview) - 7], '-|-')
+				$server = _StringExplode($servers[GUICtrlRead($listview)], '-|-')
 				Play($server[4])
 			EndIf
 		ElseIf ImgButton($cursorInfo[0], $cursorInfo[1], $RefreshButton[0], $RefreshButton[1], $RefreshButton[2], $RefreshButton[3]) Then
@@ -185,6 +187,18 @@ Func Options()
 	WEnd
 	GUIDelete($OptionsWin)
 EndFunc   ;==>Options
+
+Func ServerList()
+
+EndFunc   ;==>ServerList
+
+Func Favorites()
+
+EndFunc   ;==>Favorites
+
+Func AddToFavorites($server)
+
+EndFunc   ;==>AddToFavorites
 
 Func Play($server)
 	If FileExists(@HomeDrive & '\Ace of Spades\client.exe') Then
