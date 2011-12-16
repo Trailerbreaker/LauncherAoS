@@ -20,14 +20,20 @@
 Opt("TrayIconHide", 1)
 
 DirCreate(@TempDir & '\LauncherAoS')
+DirCreate(@AppDataDir & '\LauncherAoS')
 FileInstall('images/background.png', @TempDir & '\LauncherAoS\fond.png', 1)
+FileInstall('images/background_fond.png', @TempDir & '\LauncherAoS\fond_options.png', 1)
+;FileInstall('images/background_controls.png', @TempDir & '\LauncherAoS\fond_controls.png', 1)
 $pngFile = @TempDir & '\LauncherAoS\fond.png'
+$sqliteFile = @AppDataDir & '\LauncherAoS\LauncherAoS.sqlite'
 
 InetGet("http://aurel2108.tonbnc.fr/launcheraos/serverlist.php", @TempDir & '\LauncherAoS\serverlist.txt', 1)
 
 $serverlist = FileOpen(@TempDir & '\LauncherAoS\serverlist.txt')
 
 $LauncherWin = GUICreate("LauncherAoS", 855, 481)
+$OptionsWin = 0
+;$ControlsWin = 0
 _GDIPlus_Startup()
 $hBitmap = _GDIPlus_ImageLoadFromFile($pngFile)
 $hGraphicGUI = _GDIPlus_GraphicsCreateFromHWND($LauncherWin)
@@ -110,6 +116,7 @@ Func Refresh()
 EndFunc   ;==>Refresh
 
 Func Options()
+	$pngFile = @TempDir & '\LauncherAoS\fond_options.png'
 	If FileExists(@HomeDrive & '\Ace of Spades\config.ini') Then
 		$iniFile = @HomeDrive & '\Ace of Spades\config.ini'
 	Else
@@ -122,7 +129,15 @@ Func Options()
 		EndIf
 	EndIf
 
-	$OptionsWin = GUICreate("Options", 251, 275, 475, 250)
+	$OptionsWin = GUICreate("Options", 290, 290)
+	$hBitmap = _GDIPlus_ImageLoadFromFile($pngFile)
+	$hGraphicGUI = _GDIPlus_GraphicsCreateFromHWND($OptionsWin)
+	$hBMPBuff = _GDIPlus_BitmapCreateFromGraphics(855, 481, $hGraphicGUI)
+	$hGraphic = _GDIPlus_ImageGetGraphicsContext($hBMPBuff)
+	_GDIPlus_GraphicsDrawImage($hGraphic, $hBitmap, 0, 0)
+	GUIRegisterMsg(0xF, "MY_PAINT2"); Register PAINT-Event 0x000F = $WM_PAINT (WindowsConstants.au3)
+	GUIRegisterMsg(0x85, "MY_PAINT2") ; $WM_NCPAINT = 0x0085 (WindowsConstants.au3)Restore after Minimize.
+	_GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
 	$NameLabel = GUICtrlCreateLabel("Name :", 24, 16, 38, 17)
 	$NameInput = GUICtrlCreateInput(IniRead($iniFile, "client", "name", "Deuce"), 72, 13, 161, 21)
 	$ResolutionLabel = GUICtrlCreateLabel("Resolution :", 24, 48, 60, 17)
@@ -144,7 +159,8 @@ Func Options()
 	$MouseSensitivitySlider = GUICtrlCreateSlider(112, 194, 118, 29)
 	GUICtrlSetData(-1, IniRead($iniFile, "client", "mouse_sensitivity", "5"))
 	GUICtrlSetLimit(-1, 10, 0)
-	$OKButton = GUICtrlCreateButton("OK", 24, 232, 207, 38)
+	$OKButton = GUICtrlCreateButton("OK", 24, 232, 101, 38)
+	$ControlsButton = GUICtrlCreateButton("Controls", 130, 232, 101, 38)
 	GUISetState(@SW_SHOW)
 
 	While 1
@@ -188,6 +204,44 @@ Func Options()
 	GUIDelete($OptionsWin)
 EndFunc   ;==>Options
 
+Func Controls()
+	#cs
+		$pngFile = @TempDir & '\LauncherAoS\fond_controls.png'
+		
+		$ControlsWin = GUICreate("LauncherAoS", 500, 250)
+		
+		_GDIPlus_Startup()
+		$hBitmap3 = _GDIPlus_ImageLoadFromFile($pngFile)
+		$hGraphicGUI3 = _GDIPlus_GraphicsCreateFromHWND($ControlsWin)
+		$hBMPBuff3 = _GDIPlus_BitmapCreateFromGraphics(500, 250, $hGraphicGUI3)
+		$hGraphic3 = _GDIPlus_ImageGetGraphicsContext($hBMPBuff3)
+		_GDIPlus_GraphicsDrawImage($hGraphic3, $hBitmap3, 0, 0)
+		GUIRegisterMsg(0xF, "MY_PAINT3"); Register PAINT-Event 0x000F = $WM_PAINT (WindowsConstants.au3)
+		_GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
+		GUISetIcon('Icone.ico')
+		GUISetState()
+		
+		Local $ControlsButtons[19]
+		
+		GUISetState(@SW_SHOW)
+		
+		While 1
+		$nMsg = GUIGetMsg()
+		Switch $nMsg
+		Case $GUI_EVENT_CLOSE
+		Exit
+		EndSwitch
+		$cursorInfo = GUIGetCursorInfo()
+		If IsArray($cursorInfo) And $cursorInfo[2] == 1 Then
+		EndIf
+		WEnd
+	#ce
+EndFunc   ;==>Controls
+
+Func ControlChoose($control)
+
+EndFunc   ;==>ControlChoose
+
 Func ServerList()
 
 EndFunc   ;==>ServerList
@@ -201,19 +255,8 @@ Func AddToFavorites($server)
 EndFunc   ;==>AddToFavorites
 
 Func Play($server)
-	If FileExists(@HomeDrive & '\Ace of Spades\client.exe') Then
-		;ShellExecute(@HomeDrive & '\Ace of Spades\client.exe', '//' . $server)
-		Run(@HomeDrive & '\Ace of Spades\client.exe ' & $server)
-	Else
-		$emplacement = FileSelectFolder("Choo23 your Ace of Spades folder", "")
-		If @error Then
-		Else
-			If FileExists($emplacement & '\client.exe') Then
-				Run($emplacement & '\client.exe ' & $server)
-			EndIf
-		EndIf
-	EndIf
-	ConsoleWrite('Play : ' & $server & @CRLF)
+	ShellExecute("aos://" & $server, 1)
+	;ConsoleWrite('Play : ' & $server & @CRLF)
 EndFunc   ;==>Play
 
 _GDIPlus_GraphicsDispose($hGraphicGUI)
@@ -227,6 +270,24 @@ Func MY_PAINT($hWnd, $msg, $wParam, $lParam)
 	_WinAPI_RedrawWindow($LauncherWin, "", "", BitOR($RDW_INVALIDATE, $RDW_FRAME, $RDW_ALLCHILDREN)) ;
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>MY_PAINT
+
+Func MY_PAINT2($hWnd, $msg, $wParam, $lParam)
+	_GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
+	_WinAPI_RedrawWindow($OptionsWin, "", "", BitOR($RDW_INVALIDATE, $RDW_FRAME, $RDW_ALLCHILDREN)) ;
+	Return $GUI_RUNDEFMSG
+EndFunc   ;==>MY_PAINT2
+
+#cs
+	Func MY_PAINT3($hWnd, $msg, $wParam, $lParam)
+	_GDIPlus_GraphicsDrawImage($hGraphicGUI, $hBMPBuff, 0, 0)
+	_WinAPI_RedrawWindow($ControlsWin, "", "", BitOR($RDW_INVALIDATE, $RDW_FRAME, $RDW_ALLCHILDREN)) ;
+	Return $GUI_RUNDEFMSG
+	EndFunc   ;==>MY_PAINT3
+#ce
+
+Func WM_KEYDOWN($hWnd, $iMsg, $wParam, $lParam)
+	Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_KEYDOWN
 
 Func ImgButton($sourisX, $sourisY, $boutonX1, $boutonY1, $boutonX2, $boutonY2)
 	If $sourisX >= $boutonX1 And $sourisX <= $boutonX2 And $sourisY >= $boutonY1 And $sourisY <= $boutonY2 Then
